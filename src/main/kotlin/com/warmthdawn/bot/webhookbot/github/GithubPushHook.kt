@@ -1,12 +1,7 @@
 package com.warmthdawn.bot.webhookbot.github
 
-import com.warmthdawn.bot.webhookbot.util.JsonNode
-import com.warmthdawn.bot.webhookbot.util.content
 import com.warmthdawn.bot.webhookbot.core.IWebHookProcessor
-import com.warmthdawn.bot.webhookbot.util.node
-import com.warmthdawn.bot.webhookbot.util.buildCommitMessage
-import com.warmthdawn.bot.webhookbot.util.buildTagMessage
-import com.warmthdawn.bot.webhookbot.util.verifySignature
+import com.warmthdawn.bot.webhookbot.util.*
 import io.ktor.request.*
 import kotlinx.serialization.json.Json
 
@@ -47,12 +42,8 @@ object GithubPushHook : IWebHookProcessor {
 
 
     override fun validate(payload: String, secret: String, request: ApplicationRequest): Boolean {
-        var signature = request.headers["X-Hub-Signature-256"]
-        if(signature != null && signature.startsWith("sha256=")) {
-            signature = signature.substring("sha256=".length)
-        }
-
-        return verifySignature(signature, payload, secret)
+        val signature = request.headers["X-Hub-Signature-256"]
+        return "sha256=" + calcSignature(payload, secret)?.toHex() == signature
     }
 
     private fun parseCommit(it: JsonNode): String {

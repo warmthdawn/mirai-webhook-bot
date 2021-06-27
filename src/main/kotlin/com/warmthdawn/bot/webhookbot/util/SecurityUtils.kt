@@ -24,42 +24,17 @@ fun ByteArray.toHex(): String {
 }
 
 private val logger = PluginMain.logger
-fun verifySignature(sentSignature: String?, data: String, sharedSecret: String = ""): Boolean {
-
-    if (sharedSecret.isEmpty()) { // If shared secret is not set, receive all events
-        return true
-    }
-    if (sentSignature == null) {    //If shared secret is set, must have a signature on all events received
-        return false
-    }
-
-    var isValid = false
+fun calcSignature(data: String, sharedSecret: String): ByteArray? {
     try {
-        //If shared secret is set and a signature is passed, validate that they match
-        logger.debug(
-            " verifySignature sharedSecret: " + sharedSecret +
-                    ", event string length: " + data.length.toString() +
-                    ", event string: " + data
-        )
-
-        //Get a HmacSHA1 instance
+        //Get a HmacSHA256 instance
         val hmac: Mac = Mac.getInstance("HmacSHA256")
         //Initialize with the shared secret key
         hmac.init(SecretKeySpec(sharedSecret.toByteArray(StandardCharsets.UTF_8), "HmacSHA256"))
         //calculate the signature using the event data
-        val calculatedSignature: String =
-            hmac.doFinal(data.toByteArray(StandardCharsets.UTF_8)).toHex()
-        logger.debug("calculatedSignature: $calculatedSignature")
-
-        //The received signature and the calculated signatures must be equal to validate that the data is accureate.
-        if ((sentSignature == calculatedSignature)) {
-            isValid = true
-        } else {
-            logger.warning("isValid = false, sentSignature: $sentSignature, calculatedSignature: $calculatedSignature")
-        }
+        return hmac.doFinal(data.toByteArray(StandardCharsets.UTF_8))
 
     } catch (e: Exception) {
         logger.error("verifySignature had the following error: ", e)
     }
-    return isValid
+    return null
 }

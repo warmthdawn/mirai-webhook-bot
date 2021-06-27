@@ -45,7 +45,7 @@ class WebhookServer(
 
                 val payload = call.receiveStream().bufferedReader(charset = Charsets.UTF_8).readText()
 
-                if (!processor.validate(payload, secretKey, call.request)) {
+                if (secretKey.isEmpty() || !processor.validate(payload, secretKey, call.request)) {
                     call.respond(HttpStatusCode.Forbidden)
                     logger.warning("hook $name 校验出错")
                     return@post

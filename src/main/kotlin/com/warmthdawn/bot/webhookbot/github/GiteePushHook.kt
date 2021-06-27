@@ -1,16 +1,12 @@
 package com.warmthdawn.bot.webhookbot.github
 
-import com.warmthdawn.bot.webhookbot.util.JsonNode
-import com.warmthdawn.bot.webhookbot.util.content
 import com.warmthdawn.bot.webhookbot.core.IWebHookProcessor
-import com.warmthdawn.bot.webhookbot.util.node
-import com.warmthdawn.bot.webhookbot.util.buildCommitMessage
-import com.warmthdawn.bot.webhookbot.util.buildTagMessage
-import com.warmthdawn.bot.webhookbot.util.verifySignature
+import com.warmthdawn.bot.webhookbot.util.*
 import io.ktor.request.*
 import kotlinx.serialization.json.Json
-import java.net.URLDecoder
+import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
+import java.util.*
 
 /**
  *
@@ -57,10 +53,15 @@ object GiteePushHook : IWebHookProcessor {
     override fun validate(payload: String, secret: String, request: ApplicationRequest): Boolean {
         val signature = request.headers["X-Gitee-Token"]
         val timestamp = request.headers["X-Gitee-Timestamp"]
+
+        if (System.currentTimeMillis() - (timestamp?.toLongOrNull() ?: 0) > 1000 * 60 * 60) {
+            return false
+        }
+
         val stringToSign = timestamp + "\n" + secret
-        return verifySignature(
-            URLDecoder.decode(signature, StandardCharsets.UTF_8), stringToSign, secret
-        )
+        val signData = calcSignature(stringToSign, secret)
+        val result = URLEncoder.encode(Base64.getEncoder().encodeToString(signData), StandardCharsets.UTF_8)
+        return result == signature
     }
 
 }
