@@ -17,7 +17,7 @@ object PluginConfig : AutoSavePluginConfig("webhook") {
     val secretKey : String by value("")
     var qq: Long by value(-1L)
     val hooks:  MutableMap<String, WebHook> by value()
-    val groups by value<MutableMap<Long, MutableList<String>>>().withEmptyDefault()
+    val groups by value<MutableMap<Long, MutableSet<String>>>().withEmptyDefault()
 }
 
 
