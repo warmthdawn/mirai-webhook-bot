@@ -43,9 +43,9 @@ fun verifySignature(sentSignature: String?, data: String, sharedSecret: String =
         )
 
         //Get a HmacSHA1 instance
-        val hmac: Mac = Mac.getInstance("HmacSHA1")
+        val hmac: Mac = Mac.getInstance("HmacSHA256")
         //Initialize with the shared secret key
-        hmac.init(SecretKeySpec(sharedSecret.toByteArray(StandardCharsets.UTF_8), "HmacSHA1"))
+        hmac.init(SecretKeySpec(sharedSecret.toByteArray(StandardCharsets.UTF_8), "HmacSHA256"))
         //calculate the signature using the event data
         val calculatedSignature: String =
             hmac.doFinal(data.toByteArray(StandardCharsets.UTF_8)).toHex()

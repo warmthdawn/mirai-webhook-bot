@@ -47,7 +47,11 @@ object GithubPushHook : IWebHookProcessor {
 
 
     override fun validate(payload: String, secret: String, request: ApplicationRequest): Boolean {
-        val signature = request.headers["X-Hub-Signature-256"]
+        var signature = request.headers["X-Hub-Signature-256"]
+        if(signature != null && signature.startsWith("sha256=")) {
+            signature = signature.substring("sha256=".length)
+        }
+
         return verifySignature(signature, payload, secret)
     }
 
