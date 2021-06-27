@@ -1,11 +1,10 @@
 package com.warmthdawn.bot.webhookbot.github
 
 import com.warmthdawn.bot.webhookbot.core.IWebHookProcessor
+import com.warmthdawn.bot.webhookbot.plugin.PluginMain
 import com.warmthdawn.bot.webhookbot.util.*
 import io.ktor.request.*
 import kotlinx.serialization.json.Json
-import java.net.URLEncoder
-import java.nio.charset.StandardCharsets
 import java.util.*
 
 /**
@@ -14,6 +13,7 @@ import java.util.*
  * @since 2021-06-28
  */
 object GiteePushHook : IWebHookProcessor {
+    private val logger =  PluginMain.logger
     override fun parse(payloadString: String): String {
         val payload = Json
             .parseToJsonElement(payloadString)
@@ -60,8 +60,14 @@ object GiteePushHook : IWebHookProcessor {
 
         val stringToSign = timestamp + "\n" + secret
         val signData = calcSignature(stringToSign, secret)
-        val result = URLEncoder.encode(Base64.getEncoder().encodeToString(signData), StandardCharsets.UTF_8)
-        return result == signature
+        val result = Base64.getEncoder().encodeToString(signData)
+
+        return if (result == signature) {
+            true
+        } else {
+            logger.warning("校验失败：signature=$signature, result=$result")
+            false
+        }
     }
 
 }
