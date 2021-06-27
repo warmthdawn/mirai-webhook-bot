@@ -72,7 +72,7 @@ object PluginCommand : CompositeCommand(
                     it.name == name || name.isEmpty()
                 }
                 .map {
-                    "${it.type}: $rootUrl/webhooks/push/${it.name}"
+                    "${it.name} ${it.type}: $rootUrl/webhooks/push/${it.name}"
                 }
                 .forEach {
                     appendLine(it)
