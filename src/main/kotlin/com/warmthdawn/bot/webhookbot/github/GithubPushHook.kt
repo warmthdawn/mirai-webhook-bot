@@ -23,7 +23,7 @@ object GithubPushHook : IWebHookProcessor {
         val headCommit = parseCommit(payload["head_commit"])
 
         val commits = payload["commits"].map {
-            parseCommit(it)
+            EmojiUtils.processCommitMessage(parseCommit(it))
         }
 
         if (ref.startsWith("refs/tags/")) {

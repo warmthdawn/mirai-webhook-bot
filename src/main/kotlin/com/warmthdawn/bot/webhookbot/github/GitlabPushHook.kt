@@ -23,7 +23,7 @@ object GitlabPushHook : IWebHookProcessor {
         val pusher = payload["user_name"].content
 
         val commits = payload["commits"].map {
-            parseCommit(it)
+            EmojiUtils.processCommitMessage(parseCommit(it))
         }
 
         if (ref.startsWith("refs/tags/")) {

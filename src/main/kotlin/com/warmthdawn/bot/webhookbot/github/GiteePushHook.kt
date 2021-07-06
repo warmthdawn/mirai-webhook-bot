@@ -3,6 +3,7 @@ package com.warmthdawn.bot.webhookbot.github
 import com.warmthdawn.bot.webhookbot.core.IWebHookProcessor
 import com.warmthdawn.bot.webhookbot.plugin.PluginMain
 import com.warmthdawn.bot.webhookbot.util.*
+import com.warmthdawn.bot.webhookbot.util.EmojiUtils.processCommitMessage
 import io.ktor.request.*
 import kotlinx.serialization.json.Json
 import java.util.*
@@ -25,7 +26,7 @@ object GiteePushHook : IWebHookProcessor {
 
         val headCommit = parseCommit(payload["head_commit"])
         val commits = payload["commits"].map {
-            parseCommit(it)
+            processCommitMessage(parseCommit(it))
         }
         if (ref.startsWith("refs/tags/")) {
             val tag = ref.substring("refs/tags/".length)
