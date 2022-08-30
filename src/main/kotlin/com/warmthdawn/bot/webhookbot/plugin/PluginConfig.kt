@@ -25,14 +25,14 @@ object PluginConfig : AutoSavePluginConfig("webhook") {
 }
 
 object PluginData : AutoSavePluginData("webhook") {
-    var default: GithubToken by value { GithubToken("", "") }
+    var default: GithubToken by value()
     var tokens: MutableMap<Long, GithubToken> by value()
 }
 
 @Serializable
 data class GithubToken(
-    var tokenType: String,
-    var token: String
+    var tokenType: String = "",
+    var token: String = ""
 )
 
 

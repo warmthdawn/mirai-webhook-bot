@@ -1,22 +1,26 @@
 package com.warmthdawn.bot.webhookbot.github
 
 import com.warmthdawn.bot.webhookbot.util.*
-import kotlinx.serialization.json.Json
-import net.mamoe.mirai.message.data.Message
-import net.mamoe.mirai.message.data.toPlainText
 
 
 data class GithubCommit(
     val hash: String,
     val message: String,
     val url: String,
-    val author: GithubUser,
+    val author: CommitAuthor,
     val addedNumber: Int,
     val removedNumber: Int,
     val modifiedNumber: Int,
 ) {
-    fun toFormattedString() = "$author ${hash.substring(0, 6)}: ✏$addedNumber ,➕$addedNumber ,🗑$removedNumber\n$message"
+    fun toFormattedString() = "${author.username} ${hash.substring(0, 6)}: ✏$modifiedNumber ,➕$addedNumber ,🗑$removedNumber\n$message"
 }
+
+
+data class CommitAuthor(
+    val name: String,
+    val email: String,
+    val username: String,
+)
 
 
 data class GithubPush(
@@ -57,7 +61,11 @@ fun parseCommit(json: JsonNode): GithubCommit {
         hash = json["id"].content,
         message = json["message"].content,
         url = json["url"].content,
-        author = parseUser(json["author"]),
+        author = CommitAuthor(
+            name = json["author"]["name"].content,
+            email = json["author"]["email"].content,
+            username = json["author"]["username"].content,
+        ),
         addedNumber = json["added"].size,
         removedNumber = json["removed"].size,
         modifiedNumber = json["modified"].size
