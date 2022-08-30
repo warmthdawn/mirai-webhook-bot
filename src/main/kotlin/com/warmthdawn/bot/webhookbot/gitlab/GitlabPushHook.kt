@@ -1,26 +1,28 @@
-package com.warmthdawn.bot.webhookbot.github
+package com.warmthdawn.bot.webhookbot.gitlab
 
 import com.warmthdawn.bot.webhookbot.core.IWebHookProcessor
+import com.warmthdawn.bot.webhookbot.plugin.PluginMain
 import com.warmthdawn.bot.webhookbot.util.*
 import io.ktor.request.*
 import kotlinx.serialization.json.Json
+import net.mamoe.mirai.message.data.Message
+import net.mamoe.mirai.message.data.toPlainText
 
 /**
  *
  * @author WarmthDawn
  * @since 2021-06-27
  */
-object GithubPushHook : IWebHookProcessor {
-    override fun parse(payloadString: String): String {
+object GitlabPushHook : IWebHookProcessor {
+    private val logger =  PluginMain.logger
+    override fun process(payloadString: String, request: ApplicationRequest): Message {
         val payload = Json
             .parseToJsonElement(payloadString)
             .node
 
-        val repository = payload["repository"]["full_name"].content
+        val repository = payload["repository"]["name"].content
         val ref = payload["ref"].content
-        val pusher = payload["pusher"]["name"].content
-
-        val headCommit = parseCommit(payload["head_commit"])
+        val pusher = payload["user_name"].content
 
         val commits = payload["commits"].map {
             EmojiUtils.processCommitMessage(parseCommit(it))
@@ -28,7 +30,7 @@ object GithubPushHook : IWebHookProcessor {
 
         if (ref.startsWith("refs/tags/")) {
             val tag = ref.substring("refs/tags/".length)
-            return buildTagMessage(pusher, repository, tag, headCommit)
+            return buildTagMessage(pusher, repository, tag).toPlainText()
         }
 
 
@@ -37,13 +39,14 @@ object GithubPushHook : IWebHookProcessor {
             branch = ref.substring("refs/heads/".length)
         }
 
-        return buildCommitMessage(pusher, repository, branch, commits, headCommit)
+        return buildCommitMessage(pusher = pusher, repository = repository, branch = branch, commits = commits).toPlainText()
     }
 
 
     override fun validate(payload: String, secret: String, request: ApplicationRequest): Boolean {
-        val signature = request.headers["X-Hub-Signature-256"]
-        return "sha256=" + calcSignature(payload, secret)?.toHex() == signature
+        val signature = request.headers["X-Gitlab-Token"]
+        logger.info("验证 signature=$signature")
+        return signature == secret
     }
 
     private fun parseCommit(it: JsonNode): String {

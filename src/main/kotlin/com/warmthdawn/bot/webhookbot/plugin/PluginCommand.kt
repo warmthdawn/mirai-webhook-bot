@@ -72,13 +72,20 @@ object PluginCommand : CompositeCommand(
                     it.name == name || name.isEmpty()
                 }
                 .map {
-                    "${it.name} ${it.type}: $rootUrl/webhooks/push/${it.name}"
+                    "${it.name} ${it.type}: $rootUrl/webhooks/general/${it.name}"
                 }
                 .forEach {
                     appendLine(it)
                 }
         }
         sendMessage(msg)
+    }
+
+    @SubCommand("bindRepo", "绑定仓库")
+    suspend fun CommandSender.bindRepo(name: String = "") {
+        val group = requireGroup()?.id ?: return
+        PluginConfig.repos[group] = name
+        sendMessage("成功绑定仓库$name")
     }
 
     private suspend fun CommandSender.requireGroup(): Group? {

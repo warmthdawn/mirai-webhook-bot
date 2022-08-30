@@ -1,8 +1,8 @@
 package com.warmthdawn.bot.webhookbot.core
 
-import com.warmthdawn.bot.webhookbot.github.GiteePushHook
-import com.warmthdawn.bot.webhookbot.github.GithubPushHook
-import com.warmthdawn.bot.webhookbot.github.GitlabPushHook
+import com.warmthdawn.bot.webhookbot.gitee.GiteePushHook
+import com.warmthdawn.bot.webhookbot.github.GithubHook
+import com.warmthdawn.bot.webhookbot.gitlab.GitlabPushHook
 import kotlinx.serialization.Serializable
 
 /**
@@ -14,7 +14,7 @@ import kotlinx.serialization.Serializable
 enum class WebHookType {
     Github {
         override val processor: IWebHookProcessor
-            get() = GithubPushHook
+            get() = GithubHook
     },
     Gitlab {
         override val processor: IWebHookProcessor

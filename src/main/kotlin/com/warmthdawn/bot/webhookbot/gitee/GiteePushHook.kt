@@ -1,4 +1,4 @@
-package com.warmthdawn.bot.webhookbot.github
+package com.warmthdawn.bot.webhookbot.gitee
 
 import com.warmthdawn.bot.webhookbot.core.IWebHookProcessor
 import com.warmthdawn.bot.webhookbot.plugin.PluginMain
@@ -6,6 +6,8 @@ import com.warmthdawn.bot.webhookbot.util.*
 import com.warmthdawn.bot.webhookbot.util.EmojiUtils.processCommitMessage
 import io.ktor.request.*
 import kotlinx.serialization.json.Json
+import net.mamoe.mirai.message.data.Message
+import net.mamoe.mirai.message.data.toPlainText
 import java.util.*
 
 /**
@@ -15,7 +17,7 @@ import java.util.*
  */
 object GiteePushHook : IWebHookProcessor {
     private val logger =  PluginMain.logger
-    override fun parse(payloadString: String): String {
+    override fun process(payloadString: String, request: ApplicationRequest): Message {
         val payload = Json
             .parseToJsonElement(payloadString)
             .node
@@ -30,14 +32,14 @@ object GiteePushHook : IWebHookProcessor {
         }
         if (ref.startsWith("refs/tags/")) {
             val tag = ref.substring("refs/tags/".length)
-            return buildTagMessage(pusher, repository, tag, headCommit)
+            return buildTagMessage(pusher, repository, tag, headCommit).toPlainText()
         }
         var branch = ":$ref"
         if (ref.startsWith("refs/heads/")) {
             branch = ref.substring("refs/heads/".length)
         }
 
-        return buildCommitMessage(pusher, repository, branch, commits, headCommit)
+        return buildCommitMessage(pusher, repository, branch, commits, headCommit).toPlainText()
     }
 
     private fun parseCommit(it: JsonNode): String {

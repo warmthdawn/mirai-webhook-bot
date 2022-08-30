@@ -1,6 +1,7 @@
 package com.warmthdawn.bot.webhookbot.core
 
 import io.ktor.request.*
+import net.mamoe.mirai.message.data.Message
 
 /**
  *
@@ -8,6 +9,8 @@ import io.ktor.request.*
  * @since 2021-06-27
  */
 interface IWebHookProcessor {
-    fun parse(payloadString: String): String
+
+
+    fun process(payloadString: String, request: ApplicationRequest): Message?
     fun validate(payload: String, secret: String, request: ApplicationRequest): Boolean
 }

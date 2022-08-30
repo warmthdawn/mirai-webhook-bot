@@ -10,6 +10,7 @@ import io.ktor.routing.*
 import io.ktor.server.cio.*
 import io.ktor.server.engine.*
 import kotlinx.coroutines.*
+import net.mamoe.mirai.message.data.Message
 import kotlin.coroutines.CoroutineContext
 
 /**
@@ -29,9 +30,14 @@ class WebhookServer(
     var started = false
         private set
     override val coroutineContext: CoroutineContext = SupervisorJob(ctx.job) + Dispatchers.IO
+
+
+
+
     private val app = embeddedServer(CIO, port) {
         routing {
-            post("/webhooks/push/{name}") {
+
+            post("/webhooks/general/{name}") {
                 handler.onRequest(call)
                 val name = call.parameters["name"]
                 val hook = PluginConfig.hooks[name]
@@ -50,13 +56,17 @@ class WebhookServer(
                     logger.warning("hook $name 校验出错")
                     return@post
                 }
-
-                val result: String
+                val result: Message?
                 try {
-                    result = processor.parse(payload)
+                    result = processor.process(payload, call.request)
                 } catch (e: Exception) {
                     call.respond(HttpStatusCode.BadRequest, e)
                     logger.error("解析webhook失败", e)
+                    return@post
+                }
+
+                if(result == null) {
+                    call.respond(HttpStatusCode.NoContent)
                     return@post
                 }
 
@@ -65,8 +75,6 @@ class WebhookServer(
                 } else {
                     call.respond(HttpStatusCode.ServiceUnavailable)
                 }
-
-
             }
         }
     }
@@ -101,5 +109,5 @@ interface IServerEventHandler {
     suspend fun onServerStopping() {}
     suspend fun onServerStopped() {}
     suspend fun onRequest(call: ApplicationCall) {}
-    suspend fun onHookResult(hookName: String, result: String): Boolean = false
+    suspend fun onHookResult(hookName: String, result: Any): Boolean = false
 }
