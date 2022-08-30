@@ -6,7 +6,7 @@ import com.warmthdawn.bot.webhookbot.util.long
 
 data class GithubCommon(
     val sender: GithubUser,
-    val action: String,
+    val action: String?,
     val repository: GithubRepository?,
 )
 
@@ -26,7 +26,7 @@ data class GithubRepository(
 fun parseCommon(json: JsonNode): GithubCommon {
     return GithubCommon(
         sender = parseUser(json["sender"]),
-        action = json["action"].content,
+        action = if(json.contains("action")) json["action"].content else null,
         repository = if (json.contains("repository")) {
             GithubRepository(
                 id = json["repository"]["id"].long,

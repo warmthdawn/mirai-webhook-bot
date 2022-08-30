@@ -2,6 +2,7 @@ package com.warmthdawn.bot.webhookbot.plugin
 
 import com.warmthdawn.bot.webhookbot.core.WebHook
 import com.warmthdawn.bot.webhookbot.plugin.PluginData.provideDelegate
+import kotlinx.serialization.Serializable
 import net.mamoe.mirai.console.data.*
 import net.mamoe.mirai.console.data.PluginDataExtensions.withEmptyDefault
 
@@ -28,6 +29,7 @@ object PluginData : AutoSavePluginData("webhook") {
     var tokens: MutableMap<Long, GithubToken> by value()
 }
 
+@Serializable
 data class GithubToken(
     var tokenType: String,
     var token: String

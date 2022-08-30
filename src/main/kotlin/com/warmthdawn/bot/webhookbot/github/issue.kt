@@ -7,7 +7,7 @@ import com.warmthdawn.bot.webhookbot.util.long
 
 data class GithubIssue(
     val id: Long,
-    val url: String,
+    val htmlUrl: String,
     val title: String,
     val body: String,
     val number: Int,
@@ -15,7 +15,7 @@ data class GithubIssue(
 
 data class GithubIssueComment(
     val id: Long,
-    val url: String,
+    val htmlUrl: String,
     val body: String,
     val user: GithubUser,
 )
@@ -24,7 +24,7 @@ data class GithubIssueComment(
 fun parseIssue(json: JsonNode): GithubIssue {
     return GithubIssue(
         id = json["id"].long,
-        url = json["url"].content,
+        htmlUrl = json["html_url"].content,
         title = json["title"].content,
         body = json["body"].content,
         number = json["number"].int,
@@ -34,7 +34,7 @@ fun parseIssue(json: JsonNode): GithubIssue {
 fun parseIssueComment(json: JsonNode): GithubIssueComment {
     return GithubIssueComment(
         id = json["id"].long,
-        url = json["url"].content,
+        htmlUrl = json["html_url"].content,
         body = json["body"].content,
         user = parseUser(json["user"]),
     )
@@ -65,9 +65,9 @@ fun processIssue(json: JsonNode, common: GithubCommon): String? {
             append(repositoryName).append("/")
             append("#").append(issue.number)
             appendLine(")")
-            append("|链接|").appendLine(issue.url)
+            append("|链接|").appendLine(issue.htmlUrl)
             append("|标题|").appendLine(title)
-            appendLine(body)
+            append(body)
         }
         "closed" -> buildString {
 
@@ -82,9 +82,9 @@ fun processIssue(json: JsonNode, common: GithubCommon): String? {
             append(repositoryName).append("/")
             append("#").append(issue.number)
             appendLine(")")
-            append("|链接|").appendLine(issue.url)
+            append("|链接|").appendLine(issue.htmlUrl)
             append("|标题|").appendLine(title)
-            appendLine(issue.body)
+            append(issue.body)
         }
         "reopened" -> buildString {
             val title = if(issue.title.length > 20) {
@@ -98,7 +98,7 @@ fun processIssue(json: JsonNode, common: GithubCommon): String? {
             append(repositoryName).append("/")
             append("#").append(issue.number)
             appendLine(")")
-            append("|链接|").appendLine(issue.url)
+            append("|链接|").appendLine(issue.htmlUrl)
             append("|标题|").appendLine(title)
         }
 
@@ -126,8 +126,8 @@ fun processIssueComment(json: JsonNode, common: GithubCommon): String? {
             append(repositoryName).append("/")
             append("#").append(json["issue"]["number"].int)
             appendLine(")")
-            append("|链接|").appendLine(comment.url)
-            appendLine(body)
+            append("|链接|").appendLine(comment.htmlUrl)
+            append(body)
         }
         else -> null
     }
