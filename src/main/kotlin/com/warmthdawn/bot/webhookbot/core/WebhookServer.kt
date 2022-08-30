@@ -38,42 +38,47 @@ class WebhookServer(
         routing {
 
             post("/webhooks/general/{name}") {
-                handler.onRequest(call)
-                val name = call.parameters["name"]
-                val hook = PluginConfig.hooks[name]
-
-                if (hook == null) {
-                    call.respond(HttpStatusCode.NotFound)
-                    logger.warning("hook$name not found")
-                    return@post
-                }
-                val processor = hook.type.processor
-
-                val payload = call.receiveStream().bufferedReader(charset = Charsets.UTF_8).readText()
-
-                if (secretKey.isEmpty() || !processor.validate(payload, secretKey, call.request)) {
-                    call.respond(HttpStatusCode.Forbidden)
-                    logger.warning("hook $name 校验出错")
-                    return@post
-                }
-                val result: Message?
                 try {
-                    result = processor.process(payload, call.request)
+                    handler.onRequest(call)
+                    val name = call.parameters["name"]
+                    val hook = PluginConfig.hooks[name]
+
+                    if (hook == null) {
+                        call.respond(HttpStatusCode.NotFound)
+                        logger.warning("hook$name not found")
+                        return@post
+                    }
+                    val processor = hook.type.processor
+
+                    val payload = call.receiveStream().bufferedReader(charset = Charsets.UTF_8).readText()
+
+                    if (secretKey.isEmpty() || !processor.validate(payload, secretKey, call.request)) {
+                        call.respond(HttpStatusCode.Forbidden)
+                        logger.warning("hook $name 校验出错")
+                        return@post
+                    }
+                    val result: Message?
+                    try {
+                        result = processor.process(payload, call.request)
+                    } catch (e: Exception) {
+                        logger.error("解析webhook失败", e)
+                        call.respond(HttpStatusCode.BadRequest, e.message ?: "Internal Error")
+                        return@post
+                    }
+
+                    if (result == null) {
+                        call.respond(HttpStatusCode.NoContent)
+                        return@post
+                    }
+
+                    if (handler.onHookResult(name!!, result)) {
+                        call.respond(HttpStatusCode.Accepted)
+                    } else {
+                        call.respond(HttpStatusCode.ServiceUnavailable)
+                    }
                 } catch (e: Exception) {
-                    call.respond(HttpStatusCode.BadRequest, e)
-                    logger.error("解析webhook失败", e)
-                    return@post
-                }
-
-                if(result == null) {
-                    call.respond(HttpStatusCode.NoContent)
-                    return@post
-                }
-
-                if (handler.onHookResult(name!!, result)) {
-                    call.respond(HttpStatusCode.Accepted)
-                } else {
-                    call.respond(HttpStatusCode.ServiceUnavailable)
+                    logger.error("webhook处理出错", e)
+                    call.respond(HttpStatusCode.InternalServerError)
                 }
             }
         }

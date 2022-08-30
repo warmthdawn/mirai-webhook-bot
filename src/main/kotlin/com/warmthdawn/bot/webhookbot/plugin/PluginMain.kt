@@ -3,6 +3,8 @@ package com.warmthdawn.bot.webhookbot.plugin
 import com.warmthdawn.bot.webhookbot.core.IServerEventHandler
 import com.warmthdawn.bot.webhookbot.core.WebhookServer
 import com.warmthdawn.bot.webhookbot.github.GithubHook
+import com.warmthdawn.bot.webhookbot.github.Status
+import com.warmthdawn.bot.webhookbot.github.replyIssue
 import kotlinx.coroutines.launch
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.console.command.CommandManager.INSTANCE.register
@@ -74,11 +76,17 @@ object PluginMain : KotlinPlugin(
                                     "回复者: ${senderName}($fromId)\n\n" +
                                     comment;
 
-                            val success = GithubHook.replyIssue(repo, id.toInt(), reply)
-                            if (success) {
-                                this.group.sendMessage("成功转发回复")
-                            } else {
-                                this.group.sendMessage("转发回复失败")
+                            val statue = replyIssue(group, repo, id.toInt(), reply)
+                            when(statue) {
+                                Status.SUCCESS -> {
+                                    this.group.sendMessage("成功转发回复")
+                                }
+                                Status.FAILURE -> {
+                                    this.group.sendMessage("回复转发失败")
+                                }
+                                Status.UNAUTHORIZED -> {
+                                    this.group.sendMessage("github 未认证，请使用 /webhook auth 进行认证")
+                                }
                             }
                         }
                     } else {
@@ -89,11 +97,17 @@ object PluginMain : KotlinPlugin(
                             val reply = "来自群 ${this.group.id} 的回复: \n" +
                                     "回复者: ${this.sender.nameCardOrNick}(${this.sender.id})\n\n" +
                                     comment
-                            val success = GithubHook.replyIssue(repo, id.toInt(), reply)
-                            if (success) {
-                                this.group.sendMessage("成功回复")
-                            } else {
-                                this.group.sendMessage("回复失败")
+                            val statue = replyIssue(group, repo, id.toInt(), reply)
+                            when(statue) {
+                                Status.SUCCESS -> {
+                                    this.group.sendMessage("成功回复")
+                                }
+                                Status.FAILURE -> {
+                                    this.group.sendMessage("回复失败")
+                                }
+                                Status.UNAUTHORIZED -> {
+                                    this.group.sendMessage("github 未认证，请使用 /webhook auth 进行认证")
+                                }
                             }
                         }
                     }

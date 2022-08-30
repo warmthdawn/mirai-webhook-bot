@@ -43,7 +43,7 @@ fun parseIssueComment(json: JsonNode): GithubIssueComment {
 fun processIssue(json: JsonNode, common: GithubCommon): String? {
     val issue = parseIssue(json["issue"])
 
-    val sender = common.sender.name
+    val sender = common.sender.login
     val repositoryName = common.repository!!.full_name
 
     return when(common.action) {
@@ -110,7 +110,7 @@ fun processIssue(json: JsonNode, common: GithubCommon): String? {
 fun processIssueComment(json: JsonNode, common: GithubCommon): String? {
     val comment = parseIssueComment(json["comment"])
 
-    val sender = common.sender.name
+    val sender = common.sender.login
     val repositoryName = common.repository!!.full_name
 
     return when(common.action) {

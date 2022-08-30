@@ -2,6 +2,7 @@ package com.warmthdawn.bot.webhookbot.plugin
 
 import com.warmthdawn.bot.webhookbot.core.WebHook
 import com.warmthdawn.bot.webhookbot.core.WebHookType
+import com.warmthdawn.bot.webhookbot.github.githubOAuth
 import net.mamoe.mirai.console.command.CommandSender
 import net.mamoe.mirai.console.command.CompositeCommand
 import net.mamoe.mirai.console.command.getGroupOrNull
@@ -82,10 +83,28 @@ object PluginCommand : CompositeCommand(
     }
 
     @SubCommand("bindRepo", "绑定仓库")
-    suspend fun CommandSender.bindRepo(name: String = "") {
+    suspend fun CommandSender.bindRepo(owner: String, repo: String) {
         val group = requireGroup()?.id ?: return
+        val name = "$owner/$repo"
         PluginConfig.repos[group] = name
         sendMessage("成功绑定仓库$name")
+    }
+
+
+    @SubCommand("auth", "授权")
+    suspend fun CommandSender.auth(global: Boolean = false) {
+        if (subject == null) {
+            sendMessage("请在聊天窗口中使用")
+            return
+        }
+
+        if (global) {
+            githubOAuth(subject!!, null)
+        } else {
+
+            val group = getGroupOrNull()
+            githubOAuth(subject!!, group?.id)
+        }
     }
 
     private suspend fun CommandSender.requireGroup(): Group? {

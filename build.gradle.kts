@@ -15,8 +15,11 @@ repositories {
 }
 
 dependencies {
+    val ktor_version = "1.6.8"
     implementation(kotlin("stdlib"))
-    implementation("io.ktor:ktor-server-core:1.5.4")
-    implementation("io.ktor:ktor-server-cio:1.5.4")
-    implementation("ch.qos.logback:logback-classic:1.2.3")
+    implementation("io.ktor:ktor-server-core:$ktor_version")
+    implementation("io.ktor:ktor-server-cio:$ktor_version")
+    implementation("io.ktor:ktor-client-core:$ktor_version")
+    implementation("io.ktor:ktor-client-cio:$ktor_version")
+    implementation("ch.qos.logback:logback-classic:1.2.11")
 }

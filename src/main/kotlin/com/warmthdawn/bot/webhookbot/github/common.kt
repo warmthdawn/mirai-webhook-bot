@@ -13,7 +13,6 @@ data class GithubCommon(
 data class GithubUser(
     val id: Long,
     val login: String,
-    val name: String,
 )
 
 data class GithubRepository(
@@ -44,7 +43,6 @@ fun parseUser(json: JsonNode): GithubUser {
     return GithubUser(
         id = json["id"].long,
         login = json["login"].content,
-        name = json["name"].content,
     )
 }
 

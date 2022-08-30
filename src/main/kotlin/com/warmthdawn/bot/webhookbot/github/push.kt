@@ -31,7 +31,7 @@ data class GithubPush(
         val headCommitString = EmojiUtils.processCommitMessage(headCommit.toFormattedString())
         if (ref.startsWith("refs/tags/")) {
             val tag = ref.substring("refs/tags/".length)
-            return buildTagMessage(common.sender.name, common.repository!!.full_name, tag, headCommitString)
+            return buildTagMessage(common.sender.login, common.repository!!.full_name, tag, headCommitString)
         }
 
         val commitsLine = commits.map {
@@ -43,7 +43,7 @@ data class GithubPush(
             ":$ref"
         }
         return buildCommitMessage(
-            common.sender.name,
+            common.sender.login,
             common.repository!!.full_name,
             branch,
             commitsLine,
